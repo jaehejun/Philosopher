@@ -5,98 +5,85 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: jaehejun <jaehejun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/11/06 20:17:57 by jaehejun          #+#    #+#             */
-/*   Updated: 2023/12/14 22:25:59 by jaehejun         ###   ########.fr       */
+/*   Created: 2023/12/14 22:34:31 by jaehejun          #+#    #+#             */
+/*   Updated: 2023/12/19 18:36:30 by jaehejun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-# include "philo.h"
+#include "philo.h"
 
-void	*philo_routine(t_thread *philo)
+void	create_philo_theads(t_arg *arg, t_philo *philos)
 {
-	pthread_mutex_lock(&philo->share->start_mutex);
-	pthread_mutex_unlock(&philo->share->start_mutex);
+	int	p_num;
 
-	if (philo->philo_id % 2 == 1)
-		usleep(200);
-	while (1)
+	p_num = 0;
+	while (p_num < arg->philo_num)
 	{
-		if (philo->eat_count < philo->share->num_must_eat || philo->share->num_must_eat == -1)
-		philo_eat(philo);
-		//else
-		//{
-		//	pthread_mutex_lock(&philo->share->mutex);
-		//	philo->share->full++;
-		//	pthread_mutex_unlock(&philo->share->mutex);
-		//}
-
-		//if (need_to_stop(philo->share) == 1)
-		//	return (NULL);
-
-		//pthread_mutex_lock(&philo->share->mutex);
-		printf("%ld %d %s\n", get_time() - philo->share->start_time, philo->philo_id, "is sleeping");
-		//pthread_mutex_unlock(&philo->share->mutex);
-		usleep(1000 * philo->share->time_to_sleep);
-
-		//if (need_to_stop(philo->share) == 1)
-		//	return (NULL);
-
-		//pthread_mutex_lock(&philo->share->mutex);
-		printf("%ld %d %s\n", get_time() - philo->share->start_time, philo->philo_id, "is thinking");
-		//pthread_mutex_unlock(&philo->share->mutex);
-		usleep(100);
-		
-		//if (need_to_stop(philo->share) == 1)
-		//	return (NULL);
+		pthread_create(&philos[p_num].thread, NULL, (void *)philo_routine, \
+						&philos[p_num]);
+		p_num++;
 	}
-	return (NULL);
+}
+
+void	join_philo_threads(t_arg *arg, t_philo *philos)
+{
+	int	p_num;
+
+	p_num = 0;
+	while (p_num < arg->philo_num)
+	{
+		pthread_join(philos[p_num].thread, NULL);
+		p_num++;
+	}
+}
+
+void	destroy_mutex(t_arg *arg, t_philo *philos)
+{
+	int	p_num;
+
+	p_num = 0;
+	while (p_num < arg->philo_num)
+	{
+		pthread_mutex_destroy(&arg->fork_mutex[p_num]);
+		pthread_mutex_destroy(&philos[p_num].last_eat_mutex);
+		p_num++;
+	}
+	pthread_mutex_destroy(&arg->print_mutex);
+	pthread_mutex_destroy(&arg->full_mutex);
+	pthread_mutex_destroy(&arg->over_mutex);
+}
+
+void	free_args(t_arg *arg, t_philo *philos)
+{
+	free(arg->fork_mutex);
+	free(arg->fork_state);
+	free(philos);
+	free(arg);
 }
 
 int	main(int argc, char **argv)
 {
-	t_arg		*share;
-	t_thread	*philo;
-	int			p_cnt;
-	int			join_cnt;
-	int			destroy_cnt;
+	t_arg	*arg;
+	t_philo	*philos;
 
 	if (argc < 5 || argc > 6)
 	{
-		printf("Unvalid parameters\n");
+		printf("ERROR: INVALID NUMBER OF ARGS!\n");
 		return (0);
 	}
-
-	share = malloc(sizeof(t_arg));
-	init_args(share, argv);
-	philo = malloc(sizeof(t_thread) * share->philo_num);
-	init_philo(share, philo);
-
-	pthread_mutex_lock(&share->start_mutex);
-	p_cnt = 0;
-	while (p_cnt < share->philo_num)
+	if (check_arguments(argv) == WRONG_ARG)
 	{
-		pthread_create(&philo[p_cnt].thread, NULL, (void *)philo_routine, &philo[p_cnt]);
-		p_cnt++;
+		printf("ERROR: WRONG ARGUMNETS!\n");
+		return (0);
 	}
-	pthread_mutex_unlock(&share->start_mutex);
-	
-	
-	//monitoring(share, philo);
-	
-	join_cnt = 0;
-	while (join_cnt < share->philo_num)
-	{
-		pthread_join(philo[join_cnt].thread, NULL);
-		join_cnt++;
-	}
-
-	pthread_mutex_destroy(&share->mutex);
-	
-	destroy_cnt = 0;
-	while (destroy_cnt < share->philo_num)
-	{
-		pthread_mutex_destroy(&share->fork_mutex[destroy_cnt]);
-		destroy_cnt++;
-	}
+	arg = malloc(sizeof(t_arg));
+	init_arg(arg, argc, argv);
+	philos = malloc(sizeof(t_philo) * arg->philo_num);
+	init_philo(arg, philos);
+	create_philo_theads(arg, philos);
+	monitoring(arg, philos);
+	join_philo_threads(arg, philos);
+	destroy_mutex(arg, philos);
+	free_args(arg, philos);
 	return (0);
 }

@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: jaehejun <jaehejun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/11/21 17:14:32 by jaehejun          #+#    #+#             */
-/*   Updated: 2023/12/14 21:24:14 by jaehejun         ###   ########.fr       */
+/*   Created: 2023/12/14 22:33:47 by jaehejun          #+#    #+#             */
+/*   Updated: 2023/12/19 18:50:54 by jaehejun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ static int	is_space(char c)
 	return (0);
 }
 
-int	ft_atoi(const char *str)
+long	ft_atoi(const char *str)
 {
 	int		sign;
 	long	number;
@@ -46,15 +46,34 @@ long	get_time(void)
 {
 	struct timeval	tv;
 	long			time_ms;
-	
+
 	gettimeofday(&tv, NULL);
 	time_ms = tv.tv_sec * 1000 + tv.tv_usec / 1000;
 	return (time_ms);
 }
 
-void	print_action(long timestamp, int philo_id, char *action)
+int	check_arguments(char **argv)
 {
-	//pthread_mutex_lock(&philo->share->mutex);
-	printf("%ld %d %s\n", timestamp, philo_id, action);
-	//pthread_mutex_unlock(&philo->share->mutex);
+	long	number;
+	int		argc;
+	int		index;
+
+	argc = 1;
+	while (argv[argc] != NULL)
+	{
+		number = 0;
+		index = 0;
+		while (argv[argc][index] != '\0')
+		{
+			if ('0' <= argv[argc][index] && argv[argc][index] <= '9')
+				number = number * 10 + (argv[argc][index] - '0');
+			else
+				return (WRONG_ARG);
+			index++;
+		}
+		if (number == 0)
+			return (WRONG_ARG);
+		argc++;
+	}
+	return (VALID);
 }

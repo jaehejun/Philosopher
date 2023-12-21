@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: jaehejun <jaehejun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/11/06 20:17:45 by jaehejun          #+#    #+#             */
-/*   Updated: 2023/12/14 22:18:31 by jaehejun         ###   ########.fr       */
+/*   Created: 2023/12/14 22:32:59 by jaehejun          #+#    #+#             */
+/*   Updated: 2023/12/19 18:51:01 by jaehejun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,18 @@
 # include <sys/time.h>
 # include <pthread.h>
 
+# define WRONG_ARG -1
+# define CONTINUE 0
+# define OVER 1
+# define FULL 2
+# define DEAD 3
+# define VALID 4
+# define EAT "is eating"
+# define TAKE "has taken a fork"
+# define SLEEP "is sleeping"
+# define THINK "is thinking"
+# define DIE "is dead"
+
 typedef struct s_arg
 {
 	int				philo_num;
@@ -28,38 +40,53 @@ typedef struct s_arg
 	int				num_must_eat;
 	int				*fork_state;
 	pthread_mutex_t	*fork_mutex;
-	pthread_mutex_t	start_mutex;
-	pthread_mutex_t	mutex;
+	pthread_mutex_t	print_mutex;
 	long			start_time;
+	pthread_mutex_t	full_mutex;
 	int				full;
+	pthread_mutex_t	over_mutex;
 	int				is_over;
 }	t_arg;
 
-typedef struct s_thread
+typedef struct s_philo
 {
-	int			philo_id;
-	int			eat_count;
-	long		last_eat;
-	pthread_t	thread;
-	t_arg		*share;
-}	t_thread;
+	int				philo_id;
+	int				eat_count;
+	pthread_mutex_t	last_eat_mutex;
+	long			last_eat;
+	int				left;
+	int				right;
+	pthread_t		thread;
+	t_arg			*arg;
+}	t_philo;
 
-int		ft_atoi(const char *str);
+long	ft_atoi(const char *str);
+int		check_arguments(char **argv);
 
 long	get_time(void);
-void	print_action(long timestamp, int philo_id, char *action);
 
-void	init_args(t_arg *share, char **argv);
-void	init_philo(t_arg *share, t_thread *philo);
+void	init_arg(t_arg *arg, int argc, char **argv);
+void	init_philo(t_arg *arg, t_philo *philos);
 
-void	*philo_routine(t_thread *philo);
-void	philo_eat(t_thread *philo);
-void	philo_sleep(t_thread *philo);
-void	philo_think(t_thread *philo);
+void	create_philo_theads(t_arg *arg, t_philo *philos);
+void	join_philo_threads(t_arg *arg, t_philo *philos);
+void	destroy_mutex(t_arg *arg, t_philo *philos);
+void	free_args(t_arg *arg, t_philo *philos);
 
-int		need_to_stop(t_arg *share);
-void	monitoring(t_arg *share, t_thread *philo);
+void	*philo_routine(t_philo *philo);
+void	philo_alone(t_philo *philo);
 
+int		check_is_over(t_philo *philo);
 
+int		philo_get_fork(t_philo *philo);
+void	philo_return_fork(t_philo *philo);
+void	philo_count_eat(t_philo *philo);
+
+int		philo_eat(t_philo *philo);
+int		philo_sleep(t_philo *philo);
+int		philo_think(t_philo *philo);
+
+void	monitoring(t_arg *arg, t_philo *philos);
+int		check_is_full(t_arg *arg);
 
 #endif
