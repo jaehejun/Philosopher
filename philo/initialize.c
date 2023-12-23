@@ -6,7 +6,7 @@
 /*   By: jaehejun <jaehejun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/18 15:25:17 by jaehejun          #+#    #+#             */
-/*   Updated: 2023/12/18 15:33:20 by jaehejun         ###   ########.fr       */
+/*   Updated: 2023/12/23 17:55:05 by jaehejun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,8 @@ void	init_arg(t_arg *arg, int argc, char **argv)
 	p_num = 0;
 	while (p_num < arg->philo_num)
 	{
-		arg->fork_state[p_num] = 0;
+		//arg->fork_state[p_num] = 0;
+		arg[0].fork_state[p_num] = 0;
 		pthread_mutex_init(&arg->fork_mutex[p_num], NULL);
 		p_num++;
 	}
@@ -48,7 +49,9 @@ void	init_philo(t_arg *arg, t_philo *philos)
 	p_num = 0;
 	while (p_num < arg->philo_num)
 	{
-		philos[p_num].philo_id = p_num + 1;
+		//philos[p_num].philo_id = p_num + 1;
+		//(*(philo + p_num)).philo_id = p_num + 1;
+		(philos + p_num)->philo_id = p_num + 1;
 		philos[p_num].eat_count = 0;
 		pthread_mutex_init(&philos[p_num].last_eat_mutex, NULL);
 		philos[p_num].last_eat = arg->start_time;

@@ -6,7 +6,7 @@
 /*   By: jaehejun <jaehejun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 22:34:31 by jaehejun          #+#    #+#             */
-/*   Updated: 2023/12/19 18:36:30 by jaehejun         ###   ########.fr       */
+/*   Updated: 2023/12/23 17:43:03 by jaehejun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,7 +76,7 @@ int	main(int argc, char **argv)
 		printf("ERROR: WRONG ARGUMNETS!\n");
 		return (0);
 	}
-	arg = malloc(sizeof(t_arg));
+	arg = malloc(sizeof(t_arg) * 1);
 	init_arg(arg, argc, argv);
 	philos = malloc(sizeof(t_philo) * arg->philo_num);
 	init_philo(arg, philos);
